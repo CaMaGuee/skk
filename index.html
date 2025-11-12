@@ -3,10 +3,8 @@
 <head>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#317EFB">
-  <link rel="icon" type="image/png" href="favicon.png?v=2">
-  <link rel="icon" type="image/x-icon" href="favicon.ico?v=2">
-  <link rel="apple-touch-icon" href="favicon.png?v=2">
-  <link rel="shortcut icon" href="favicon.ico?v=2">
+  <link rel="icon" type="image/png" href="favicon_512.png?v=2">
+  <link rel="apple-touch-icon" href="favicon_512.png?v=2">
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>주식 수익 계산기</title>
@@ -267,7 +265,7 @@
           <div class="donut-label">
             <span id="donutText">0%</span>
             <div style="font-size:12px; color:#555;">
-              수익 <span id="donutProfit">0</span> / 손실 <span id="donutLoss">0</span>
+              수익 <span id="donutProfit">0</span> / <span id="donutLoss">0</span>
             </div>
           </div>
         </div>
@@ -311,13 +309,31 @@
 
   const BASE_AMOUNT = 50000;  // 기준 5만 원
 
-  function getNetProfit() {
+  // 오늘 날짜 기준으로 수익/손실 계산
+  function getTodayNetProfit() {
+    const today = new Date().toISOString().split('T')[0]; // 오늘 날짜 YYYY-MM-DD
+
+    const todayProfits = profits
+      .filter(p => p.date === today)
+      .reduce((s, b) => s + b.amount, 0);
+
+    const todayLosses = Math.abs(
+      losses
+        .filter(l => l.date === today)
+        .reduce((s, b) => s + b.amount, 0)
+    );
+
+    const net = todayProfits - todayLosses;
+    const rate = net / BASE_AMOUNT * 100;
+
+    return { profit: todayProfits, loss: todayLosses, net, rate };
+  }
+  
+  // 전체 내역은 그대로 유지 (삭제/정렬용)
+  function getTotalNetProfit() {
     const totalProfit = profits.reduce((s, b) => s + b.amount, 0);
     const totalLoss = Math.abs(losses.reduce((s, b) => s + b.amount, 0));
-    const net = totalProfit - totalLoss;  // 오늘 순수익
-    const rate = net / BASE_AMOUNT * 100; // 5만 원 기준 수익률
-
-    return { profit: totalProfit, loss: totalLoss, net, rate };
+    return totalProfit - totalLoss;
   }
 
   function refreshLists() {
@@ -356,22 +372,21 @@
     updateDonut();
   }
 
+  // 도넛 업데이트 (오늘만)
   function updateDonut() {
-    const { profit, loss, net, rate } = getNetProfit();
+    const { net, rate } = getTodayNetProfit(); // 오늘만 계산
     const circumference = 339.292;
-    const clampedRate = Math.max(0, Math.min(1000, rate)); // 0~1000% 제한
+    const clampedRate = Math.max(0, Math.min(1000, rate));
     const offset = circumference - (clampedRate / 100) * circumference;
 
     const fg = document.querySelector('.donut-fg');
     fg.style.strokeDashoffset = offset;
     fg.style.stroke = net >= 0 ? '#28a745' : '#dc3545';
 
-    // 도넛 가운데 텍스트
     document.getElementById('donutText').innerText = `${rate.toFixed(1)}%`;
     document.getElementById('donutProfit').innerText = net.toFixed(0);
     document.getElementById('donutLoss').innerText = '50000';
 
-    // 순수익 표시
     const netEl = document.getElementById('netProfit');
     netEl.innerText = (net >= 0 ? '+' : '') + net.toFixed(0);
     netEl.style.color = net >= 0 ? '#048300' : '#d63384';
