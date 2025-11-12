@@ -138,7 +138,14 @@
       width:100%;
       justify-content: center;
     }
-    #TickerInput {
+
+    #dailyTableContainer {
+      align-items: flex-start;
+      display:flex; flex-direction:row; gap:4%;
+      justify-content: center;
+    }
+
+    #TickerInput, .dailyTable {
       font-size: 13px;
       width:92%;
       display:flex; flex-direction:column; gap:8px;
@@ -167,6 +174,87 @@
 
     .status { margin-top:10px; font-weight:700; color:#0b1220; }
     .status span { color:#007aff; }
+
+    /* ===== 테이블 ===== */
+    .daily-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 7px;
+      font-size: 14px;
+    }
+    .daily-table th {
+      padding: 12px 16px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      font-weight: 600;
+      font-size: 13px;
+      text-align: left;
+    }
+    .daily-table th:last-child {
+      text-align: right;
+    }
+    .daily-table th:first-child {
+      border-radius: 10px 0 0 10px;
+    }
+    .daily-table th:last-child {
+      border-radius: 0 10px 10px 0;
+    }
+
+    .daily-table td {
+      padding: 13px 16px;
+      background: #ffffff;
+      border-bottom: 1px solid #f0f2f5;
+      transition: all 0.2s ease;
+    }
+    .daily-table tr:hover td {
+      background: #f0f7ff;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(0,123,255,0.08);
+    }
+    .daily-table tr:last-child td {
+      border-bottom: none;
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    /* ===== 셀 내용 스타일 ===== */
+    .daily-table .ticker {
+      font-weight: 600;
+      color: #2c3e50;
+      font-family: 'Courier New', monospace;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .daily-table .amount {
+      text-align: right;
+      font-weight: 600;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .daily-table .profit {
+      color: #28a745;
+    }
+    .daily-table .loss {
+      color: #dc3545;
+    }
+    .daily-table .total-label {
+      color: #1a1a1a;
+      font-weight: 700;
+    }
+    .daily-table .total-amount {
+      font-size: 16px !important;
+      font-weight: 700;
+    }
+
+    /* ===== 아이콘 (텍스트 기반) ===== */
+    .icon-up {
+      color: #28a745;
+      font-weight: bold;
+    }
+    .icon-down {
+      color: #dc3545;
+      font-weight: bold;
+    }
 
     .notice-bar{
       position: fixed;
@@ -251,30 +339,29 @@
         </div>
       </div>
       <br/>
+      <div class="left-item">
+          <h4 class="SubTitleText"><div class="SubTitleLogo"></div>수익률</h4>
+          <div class="donut">
+            <svg class="donut-ring" width="140" height="140" viewBox="0 0 120 120">
+              <circle class="donut-bg" cx="60" cy="60" r="54"></circle>
+              <circle class="donut-fg" cx="60" cy="60" r="54"></circle>
+            </svg>
+            <div class="donut-label">
+              <span id="donutText">0%</span>
+              <div style="font-size:12px; color:#555;">
+                수익 <span id="donutProfit">0</span> / <span id="donutLoss">0</span>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:20px; width: 100%; display:flex; flex-direction: column; align-items: center;">
+            <div style="font-weight: 600; font-size: 20px;" id="netProfit">0</div>
+            <div class="status" style="margin-top: 0;">순수익</div>
+          </div>
+        </div>
     </div>
 
     <!-- 오른쪽 -->
     <div class="right">
-      <div class="right-item">
-        <h4 class="SubTitleText"><div class="SubTitleLogo"></div>수익률</h4>
-        <div class="donut">
-          <svg class="donut-ring" width="140" height="140" viewBox="0 0 120 120">
-            <circle class="donut-bg" cx="60" cy="60" r="54"></circle>
-            <circle class="donut-fg" cx="60" cy="60" r="54"></circle>
-          </svg>
-          <div class="donut-label">
-            <span id="donutText">0%</span>
-            <div style="font-size:12px; color:#555;">
-              수익 <span id="donutProfit">0</span> / <span id="donutLoss">0</span>
-            </div>
-          </div>
-        </div>
-        <div style="margin-top:20px; width: 100%; display:flex; flex-direction: column; align-items: center;">
-          <div style="font-weight: 600; font-size: 20px;" id="netProfit">0</div>
-          <div class="status" style="margin-top: 0;">순수익</div>
-        </div>
-      </div>
-      <br/>
       <div class="right-item">
         <h4 class="SubTitleText"><div class="SubTitleLogo"></div>거래 내역</h4>
         <div class="TradeTypeBtn">
@@ -294,6 +381,28 @@
         <div id="TotalListView" style="width: 100%">
           <div class="status">전체 거래</div>
           <div id="totalList" class="list"></div>
+        </div>
+      </div>
+      <br/>
+
+      <!-- 날짜별 도표 -->
+      <div class="right-item" id="dailyTableContainer">
+        <div class="dailyTable">
+          <h4 class="SubTitleText"><div class="SubTitleLogo"></div>날짜별 수익 도표</h4>
+          <label style="padding-left:3px;">날짜 (선택, 기본: 오늘)</label>
+          <input id="dateSelect" style="text-align: center" type="date">
+          <br/>
+          <div id="dailyTable" class="daily-table-container" style="display:none;">
+            <table class="daily-table">
+              <thead>
+                <tr>
+                  <th>티커</th>
+                  <th>수익/손실</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -376,7 +485,7 @@
   function updateDonut() {
     const { net, rate } = getTodayNetProfit(); // 오늘만 계산
     const circumference = 339.292;
-    const clampedRate = Math.max(0, Math.min(1000, rate));
+    const clampedRate = Math.max(0, Math.min(100, rate));
     const offset = circumference - (clampedRate / 100) * circumference;
 
     const fg = document.querySelector('.donut-fg');
@@ -445,6 +554,80 @@
     });
     refreshLists();
   };
+
+  // 선택한 날짜의 모든 거래 가져오기
+  function getTradesByDate(date) {
+    const p = profits.filter(t => t.date === date).map(t => ({ ...t, type: 'profit' }));
+    const l = losses.filter(t => t.date === date).map(t => ({ ...t, type: 'loss' }));
+    return [...p, ...l].sort((a, b) => a.ticker.localeCompare(b.ticker));
+  }
+
+  // 고유 날짜 목록 추출
+  function getUniqueDates() {
+    const dates = new Set();
+    profits.forEach(t => dates.add(t.date));
+    losses.forEach(t => dates.add(t.date));
+    return Array.from(dates).sort().reverse();
+  }
+
+  // 날짜 선택기 업데이트
+  function updateDateSelect() {
+    const select = document.getElementById('dateSelect');
+    select.innerHTML = '<option value="">날짜 선택</option>';
+    getUniqueDates().forEach(date => {
+      const opt = document.createElement('option');
+      opt.value = date;
+      opt.textContent = date.replace(/-/g, '.') + ' (' + 
+        ['일','월','화','수','목','금','토'][new Date(date).getDay()] + ')';
+      select.appendChild(opt);
+    });
+  }
+
+  // 선택한 날짜의 표 그리기
+  function renderDailyTable(date) {
+    const container = document.getElementById('dailyTable');
+    const tbody = container.querySelector('tbody');
+    tbody.innerHTML = '';
+
+    const trades = getTradesByDate(date);
+    let total = 0;
+
+    trades.forEach(t => {
+      const row = document.createElement('tr');
+      const amount = t.type === 'profit' ? t.amount : t.amount;
+      total += amount;
+
+      row.innerHTML = `
+        <td>${t.ticker}</td>
+        <td class="${t.type === 'profit' ? 'profit' : 'loss'}">
+          ${t.type === 'profit' ? '' : ''}${(amount).toLocaleString()}
+        </td>
+      `;
+      tbody.appendChild(row);
+    });
+
+    // Total 행 추가
+    const totalRow = document.createElement('tr');
+    totalRow.innerHTML = `
+      <td>Total</td>
+      <td style="color: ${total >= 0 ? '#28a745' : '#dc3545'}; font-weight:700;">
+        ${total.toLocaleString()}
+      </td>
+    `;
+    tbody.appendChild(totalRow);
+
+    container.style.display = 'block';
+  }
+
+  // 날짜 선택 이벤트
+  document.getElementById('dateSelect').addEventListener('change', function() {
+    const date = this.value;
+    if (date) {
+      renderDailyTable(date);
+    } else {
+      document.getElementById('dailyTable').style.display = 'none';
+    }
+  });
 
   // 내보내기
   document.getElementById('exportData').onclick = () => {
