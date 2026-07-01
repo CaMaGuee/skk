@@ -1,3 +1,3 @@
 # skk
 수익 계산기
-camaguee.github.io/skk/
+https://camaguee.github.io/skk/
